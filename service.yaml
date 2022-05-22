@@ -1,0 +1,31 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: test-cloud-run
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: '1'
+        autoscaling.knative.dev/maxScale: '50'
+    spec:
+      serviceAccountName: test-cloud-run@tdevops-page.iam.gserviceaccount.com
+      containerConcurrency: 80
+      containers:
+        image: "us-docker.pkg.dev/cloudrun/container/hello"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PROJECT_ID
+          value: devops-page
+        - name: SECRETS_MANAGER_TEST
+          valueFrom:
+            secretKeyRef:
+              key: latest
+              name: sm-secrets-example
+        resources:
+          limits:
+            memory: 1024M
+            cpu: 1000m
